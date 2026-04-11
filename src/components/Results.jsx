@@ -443,16 +443,6 @@ export default function Results({ analysis, isLoading, error, onRetry, formData 
             {analysis.disclaimer || 'This analysis is for informational purposes only and does not constitute legal advice. Results are estimates only. Legaliant is a brand of Vertex Ventures LLC. We are not a law firm.'}
           </p>
         </div>
-
-        
-        {/* Legaliant footer */}
-        <div className="text-center pb-4">
-          <div className="flex items-center justify-center gap-2 text-navy/30">
-            <Scale size={14} />
-            <span className="text-xs font-serif">Legaliant</span>
-            <span className="text-xs">© {new Date().getFullYear()} Vertex Ventures LLC. All rights reserved.</span>
-          </div>
-        </div>
       </div>
     </div>
   );

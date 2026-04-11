@@ -139,7 +139,7 @@ export default function App() {
         )}
       </main>
 
-      {showHero && <Disclaimer />}
+      <Disclaimer />
     </div>
   );
 }
