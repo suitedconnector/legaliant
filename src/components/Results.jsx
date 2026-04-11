@@ -3,7 +3,9 @@ import {
   Scale, TrendingUp, TrendingDown, Minus,
   CheckCircle2, AlertTriangle, Phone, ArrowRight,
   Shield, FileText, Award, BarChart3, Clock, ChevronDown, ChevronUp,
+  Download, RefreshCw, Quote,
 } from 'lucide-react';
+import DamageChart from './DamageChart.jsx';
 
 /* ─── Helpers ──────────────────────────────────────────────── */
 function fmtUSD(n) {
@@ -194,10 +196,15 @@ export default function Results({ analysis, isLoading, error, onRetry, formData 
 
   const strength = STRENGTH_COLORS[analysis.caseStrength] || STRENGTH_COLORS['Moderate'];
   const firstName = (formData?.name || '').split(' ')[0] || 'Your';
+  
+  // Personalization calculations
+  const salary = parseFloat(String(formData?.annualSalary || '').replace(/,/g, '')) || 0;
+  const daysSinceTermination = parseFloat(formData?.daysSinceTermination) || 0;
+  const backPayEstimate = salary / 365 * daysSinceTermination;
 
   return (
     <div
-      className="min-h-screen bg-gray-50 transition-opacity duration-700 ease-out"
+      className="copyright-protected min-h-screen bg-gray-50 transition-opacity duration-700 ease-out"
       style={{ opacity: revealed ? 1 : 0, transform: revealed ? 'none' : 'translateY(12px)', transition: 'opacity 0.65s ease-out, transform 0.65s ease-out' }}
     >
       {/* ─── Results Header ─── */}
@@ -288,18 +295,45 @@ export default function Results({ analysis, isLoading, error, onRetry, formData 
           </div>
         </div>
 
-        {/* ─── Damage Categories ─── */}
+        {/* ─── Personalization Section */}
+        {salary > 0 && (
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <TrendingUp size={15} className="text-gold" />
+              <h2 className="font-serif text-navy text-lg font-bold">Your Calculated Damages</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="text-center p-4 bg-navy/5 rounded-xl">
+                <p className="text-gray-500 text-xs mb-1">Your Salary</p>
+                <p className="text-navy font-bold text-lg">{fmtUSD(salary)}</p>
+              </div>
+              <div className="text-center p-4 bg-navy/5 rounded-xl">
+                <p className="text-gray-500 text-xs mb-1">Days Since Termination</p>
+                <p className="text-navy font-bold text-lg">{Math.round(daysSinceTermination)}</p>
+              </div>
+              <div className="text-center p-4 bg-gold/10 rounded-xl border border-gold/25">
+                <p className="text-gray-500 text-xs mb-1">Estimated Back Pay</p>
+                <p className="text-navy font-bold text-lg">{fmtUSD(backPayEstimate)}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Damage Chart */}
         {analysis.damageCategories?.length > 0 && (
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <BarChart3 size={15} className="text-gold" />
-              <h2 className="font-serif text-navy text-lg font-bold">Damage Breakdown</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <BarChart3 size={15} className="text-gold" />
+                <h2 className="font-serif text-navy text-lg font-bold">Detailed Breakdown</h2>
+              </div>
+              <div className="space-y-2">
+                {analysis.damageCategories.map((cat) => (
+                  <DamageCard key={cat.category} {...cat} />
+                ))}
+              </div>
             </div>
-            <div className="space-y-2">
-              {analysis.damageCategories.map((cat) => (
-                <DamageCard key={cat.category} {...cat} />
-              ))}
-            </div>
+            <DamageChart damageCategories={analysis.damageCategories} />
           </div>
         )}
 
@@ -355,7 +389,26 @@ export default function Results({ analysis, isLoading, error, onRetry, formData 
           </div>
         )}
 
-        {/* ─── CTA ─── */}
+        {/* Export & Actions */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <button
+            onClick={() => window.print()}
+            className="flex-1 flex items-center justify-center gap-2 py-3 px-6 bg-white border border-gray-200 rounded-xl text-navy font-semibold hover:bg-gray-50 transition-colors"
+          >
+            <Download size={16} />
+            Download PDF Report
+          </button>
+          <button
+            onClick={() => window.location.reload()}
+            className="flex-1 flex items-center justify-center gap-2 py-3 px-6 bg-white border border-gray-200 rounded-xl text-navy font-semibold hover:bg-gray-50 transition-colors"
+          >
+            <RefreshCw size={16} />
+            Recalculate Analysis
+          </button>
+        </div>
+
+        
+        {/* CTA */}
         <div className="bg-navy rounded-2xl overflow-hidden shadow-navy-lg">
           <div className="px-6 py-8 text-center">
             <div className="w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center"
@@ -367,7 +420,7 @@ export default function Results({ analysis, isLoading, error, onRetry, formData 
             </h3>
             <p className="text-white/60 text-sm mb-6 max-w-sm mx-auto leading-relaxed">
               A licensed California employment attorney in our network will review your
-              case at no charge. Most cases are handled on contingency — you pay nothing
+              case at no charge. Most cases are handled on contingency -- you pay nothing
               unless you win.
             </p>
             <a
@@ -379,7 +432,7 @@ export default function Results({ analysis, isLoading, error, onRetry, formData 
               <ArrowRight size={18} />
             </a>
             <p className="text-white/30 text-xs mt-4">
-              Free • No obligation • Contingency available
+              Free · No obligation · Contingency available
             </p>
           </div>
         </div>
@@ -391,12 +444,29 @@ export default function Results({ analysis, isLoading, error, onRetry, formData 
           </p>
         </div>
 
+        {/* Copyright & Legal */}
+        <div className="bg-navy rounded-2xl p-6 mb-4">
+          <div className="text-center text-white/80 text-xs leading-relaxed">
+            <p className="font-semibold text-gold mb-2">© 2026 Legaliant Ventures LLC. All rights reserved.</p>
+            <p className="mb-2">
+              The Legaliant Wrongful Termination Calculator, including its design, layout, damage breakdown format, 
+              visual styling, and unique report structure (e.g., settlement ranges, key factors list, FEHA next steps), 
+              is protected by U.S. copyright law. No reproduction, distribution, or creation of derivative works 
+              without express written permission.
+            </p>
+            <p className="text-white/60">
+              Limited License: You may use this calculator for personal, non-commercial evaluation of your case only. 
+              Copying, scraping, or replicating any part of the interface, outputs, or design for any purpose is strictly prohibited.
+            </p>
+          </div>
+        </div>
+
         {/* Legaliant footer */}
         <div className="text-center pb-4">
           <div className="flex items-center justify-center gap-2 text-navy/30">
             <Scale size={14} />
             <span className="text-xs font-serif">Legaliant</span>
-            <span className="text-xs">· Vertex Ventures LLC · © {new Date().getFullYear()}</span>
+            <span className="text-xs">· Legaliant Ventures LLC · © {new Date().getFullYear()}</span>
           </div>
         </div>
       </div>

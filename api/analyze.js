@@ -193,8 +193,10 @@ function generateEmailTemplate(analysis, formData) {
             </div>
             
             <div class="footer">
+                <p><strong>© 2026 Legaliant Ventures LLC. All rights reserved.</strong></p>
                 <p>This analysis is for informational purposes only and does not constitute legal advice.</p>
-                <p>© ${new Date().getFullYear()} Legaliant · Vertex Ventures LLC</p>
+                <p>The Legaliant Wrongful Termination Calculator design and report format are protected by U.S. copyright law.</p>
+                <p>Limited License: For personal, non-commercial evaluation only. No reproduction or derivative works permitted.</p>
             </div>
         </div>
     </div>

@@ -7,6 +7,7 @@ import StepThree from './components/StepThree.jsx';
 import TeaserResults from './components/TeaserResults.jsx';
 import Results from './components/Results.jsx';
 import Disclaimer from './components/Disclaimer.jsx';
+import CopyrightProtection from './components/CopyrightProtection.jsx';
 
 const INITIAL_FORM = {
   // Step 1
@@ -82,6 +83,8 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <CopyrightProtection />
+      
       {showHero && <Hero compact={step > 1} />}
 
       {showProgress && <ProgressBar step={step} />}
