@@ -447,7 +447,7 @@ export default function Results({ analysis, isLoading, error, onRetry, formData 
         {/* Copyright & Legal */}
         <div className="bg-navy rounded-2xl p-6 mb-4">
           <div className="text-center text-white/80 text-xs leading-relaxed">
-            <p className="font-semibold text-gold mb-2">© 2026 Vertex Ventures LLC. All rights reserved.</p>
+            <p className="font-semibold text-white/60 mb-2">© 2026 Vertex Ventures LLC. All rights reserved.</p>
             <p className="mb-2">
               The Legaliant Wrongful Termination Calculator, including its design, layout, damage breakdown format, 
               visual styling, and unique report structure (e.g., settlement ranges, key factors list, FEHA next steps), 
@@ -466,7 +466,7 @@ export default function Results({ analysis, isLoading, error, onRetry, formData 
           <div className="flex items-center justify-center gap-2 text-navy/30">
             <Scale size={14} />
             <span className="text-xs font-serif">Legaliant</span>
-            <span className="text-xs">· Legaliant Ventures LLC · © {new Date().getFullYear()}</span>
+            <span className="text-xs">· Vertex Ventures LLC · © {new Date().getFullYear()}</span>
           </div>
         </div>
       </div>

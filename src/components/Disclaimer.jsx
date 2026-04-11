@@ -23,7 +23,7 @@ export default function Disclaimer() {
         {/* Copyright Notice */}
         <div className="border-t border-gray-200 pt-4">
           <p className="text-xs text-gray-500 leading-relaxed text-center mb-2">
-            <span className="font-semibold text-gold">© 2026 Vertex Ventures LLC. All rights reserved.</span>
+            <span className="font-semibold text-gray-500">© 2026 Vertex Ventures LLC. All rights reserved.</span>
           </p>
           <p className="text-xs text-gray-500 leading-relaxed text-center">
             The Legaliant Wrongful Termination Calculator, including its design, layout, damage breakdown format,
