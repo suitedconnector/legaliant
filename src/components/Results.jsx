@@ -444,23 +444,7 @@ export default function Results({ analysis, isLoading, error, onRetry, formData 
           </p>
         </div>
 
-        {/* Copyright & Legal */}
-        <div className="bg-navy rounded-2xl p-6 mb-4">
-          <div className="text-center text-white/80 text-xs leading-relaxed">
-            <p className="font-semibold text-white/60 mb-2">© 2026 Vertex Ventures LLC. All rights reserved.</p>
-            <p className="mb-2">
-              The Legaliant Wrongful Termination Calculator, including its design, layout, damage breakdown format, 
-              visual styling, and unique report structure (e.g., settlement ranges, key factors list, FEHA next steps), 
-              is protected by U.S. copyright law. No reproduction, distribution, or creation of derivative works 
-              without express written permission.
-            </p>
-            <p className="text-white/60">
-              Limited License: You may use this calculator for personal, non-commercial evaluation of your case only. 
-              Copying, scraping, or replicating any part of the interface, outputs, or design for any purpose is strictly prohibited.
-            </p>
-          </div>
-        </div>
-
+        
         {/* Legaliant footer */}
         <div className="text-center pb-4">
           <div className="flex items-center justify-center gap-2 text-navy/30">
