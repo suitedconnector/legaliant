@@ -50,7 +50,7 @@ export default function CopyrightProtection() {
     document.addEventListener('keydown', handleKeyDown);
 
     // Console warning
-    console.log('%c© 2026 Legaliant Ventures LLC - All Rights Reserved', 'color: #c9a84c; font-size: 16px; font-weight: bold;');
+    console.log('%c© 2026 Vertex Ventures LLC - All Rights Reserved', 'color: #c9a84c; font-size: 16px; font-weight: bold;');
     console.log('%cThe design, layout, and content of this calculator are protected by U.S. copyright law.', 'color: #1a2744; font-size: 12px;');
     console.log('%cUnauthorized reproduction, scraping, or derivative works are strictly prohibited.', 'color: #dc2626; font-size: 12px;');
 
@@ -67,7 +67,7 @@ export default function CopyrightProtection() {
   useEffect(() => {
     const meta = document.createElement('meta');
     meta.name = 'copyright';
-    meta.content = '© 2026 Legaliant Ventures LLC - All rights reserved. Protected by U.S. copyright law.';
+    meta.content = '© 2026 Vertex Ventures LLC - All rights reserved. Protected by U.S. copyright law.';
     document.head.appendChild(meta);
 
     return () => {

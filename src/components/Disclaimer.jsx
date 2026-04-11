@@ -16,14 +16,14 @@ export default function Disclaimer() {
         <p className="text-xs text-gray-400 leading-relaxed text-center mb-4">
           This calculator is for informational purposes only and does not constitute legal advice.
           Results are estimates only and are not a guarantee of any outcome. Individual case results
-          vary based on specific facts and circumstances. Legaliant is a brand of Legaliant Ventures LLC.
+          vary based on specific facts and circumstances. Legaliant is a brand of Vertex Ventures LLC.
           We are not a law firm and do not provide legal representation.
         </p>
 
         {/* Copyright Notice */}
         <div className="border-t border-gray-200 pt-4">
           <p className="text-xs text-gray-500 leading-relaxed text-center mb-2">
-            <span className="font-semibold text-gold">© 2026 Legaliant Ventures LLC. All rights reserved.</span>
+            <span className="font-semibold text-gold">© 2026 Vertex Ventures LLC. All rights reserved.</span>
           </p>
           <p className="text-xs text-gray-500 leading-relaxed text-center">
             The Legaliant Wrongful Termination Calculator, including its design, layout, damage breakdown format,
