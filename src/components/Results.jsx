@@ -466,7 +466,7 @@ export default function Results({ analysis, isLoading, error, onRetry, formData 
           <div className="flex items-center justify-center gap-2 text-navy/30">
             <Scale size={14} />
             <span className="text-xs font-serif">Legaliant</span>
-            <span className="text-xs">· Vertex Ventures LLC · © {new Date().getFullYear()}</span>
+            <span className="text-xs">© {new Date().getFullYear()} Vertex Ventures LLC. All rights reserved.</span>
           </div>
         </div>
       </div>
