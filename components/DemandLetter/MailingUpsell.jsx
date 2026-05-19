@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Mail, Zap, Download, ArrowRight, CheckCircle2 } from 'lucide-react';
+import jsPDF from 'jspdf';
 
 export default function MailingUpsell({ letter, recipientAddress, senderEmail, senderName }) {
   const [tier, setTier] = useState(null);
@@ -29,13 +30,33 @@ export default function MailingUpsell({ letter, recipientAddress, senderEmail, s
   };
 
   const handleDownload = () => {
-    const blob = new Blob([letter], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'demand-letter.txt';
-    a.click();
-    URL.revokeObjectURL(url);
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'letter',
+    });
+
+    const margin = 25;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const maxLineWidth = pageWidth - margin * 2;
+
+    doc.setFont('times', 'normal');
+    doc.setFontSize(11);
+
+    const lines = doc.splitTextToSize(letter, maxLineWidth);
+    let y = margin;
+
+    for (const line of lines) {
+      if (y + 6 > pageHeight - margin) {
+        doc.addPage();
+        y = margin;
+      }
+      doc.text(line, margin, y);
+      y += 6;
+    }
+
+    doc.save('demand-letter.pdf');
   };
 
   if (ordered) {
