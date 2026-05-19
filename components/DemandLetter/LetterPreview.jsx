@@ -5,7 +5,7 @@ import { Check, Edit3, FileText, FileDown } from 'lucide-react';
 import { Document, Paragraph, TextRun, Packer } from 'docx';
 import { saveAs } from 'file-saver';
 
-export default function LetterPreview({ letter, onApprove, onRequestEdit }) {
+export default function LetterPreview({ letter, onApprove, onRequestEdit, revisionsLeft = 2 }) {
   const [editMode, setEditMode] = useState(false);
   const [editRequest, setEditRequest] = useState('');
 
@@ -152,18 +152,27 @@ export default function LetterPreview({ letter, onApprove, onRequestEdit }) {
 
       {/* Action buttons */}
       {!editMode && (
-        <div className="px-6 py-5 border-t border-gray-100 flex gap-3">
-          <button onClick={onApprove} className="btn-gold flex-1 py-3 text-sm justify-center">
-            <Check size={16} />
-            Approve &amp; Continue
-          </button>
-          <button
-            onClick={() => setEditMode(true)}
-            className="btn-outline flex-1 py-3 text-sm justify-center"
-          >
-            <Edit3 size={16} />
-            Request Changes
-          </button>
+        <div className="px-6 py-5 border-t border-gray-100">
+          <div className="flex gap-3 mb-3">
+            <button onClick={onApprove} className="btn-gold flex-1 py-3 text-sm justify-center">
+              <Check size={16} />
+              Approve &amp; Continue
+            </button>
+            <button
+              onClick={() => revisionsLeft > 0 && setEditMode(true)}
+              disabled={revisionsLeft === 0}
+              title={revisionsLeft === 0 ? 'Maximum revisions reached. Download or proceed to mailing.' : ''}
+              className="btn-outline flex-1 py-3 text-sm justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <Edit3 size={16} />
+              Request Changes
+            </button>
+          </div>
+          <p className="text-center text-xs" style={{ color: revisionsLeft === 0 ? '#f87171' : '#9ca3af' }}>
+            {revisionsLeft === 0
+              ? 'Maximum revisions reached'
+              : `${revisionsLeft} free revision${revisionsLeft === 1 ? '' : 's'} remaining`}
+          </p>
         </div>
       )}
     </div>
