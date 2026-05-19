@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Mail, Zap, Download, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Mail, Zap, ArrowRight, CheckCircle2 } from 'lucide-react';
 
 export default function MailingUpsell({ letter, recipientAddress, senderEmail, senderName }) {
   const [tier, setTier] = useState(null);
@@ -26,67 +26,6 @@ export default function MailingUpsell({ letter, recipientAddress, senderEmail, s
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleDownload = () => {
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Demand Letter — Legaliant</title>
-          <style>
-            @media print {
-              @page {
-                size: letter;
-                margin: 1in;
-              }
-              body {
-                font-family: 'Times New Roman', Times, serif;
-                font-size: 12pt;
-                line-height: 1.6;
-                color: #000;
-              }
-              .no-print { display: none; }
-            }
-            body {
-              font-family: 'Times New Roman', Times, serif;
-              font-size: 12pt;
-              line-height: 1.6;
-              max-width: 680px;
-              margin: 40px auto;
-              padding: 20px;
-              color: #000;
-            }
-            .instructions {
-              background: #f0f0f0;
-              padding: 12px;
-              margin-bottom: 24px;
-              border-radius: 4px;
-              font-family: Arial, sans-serif;
-              font-size: 11pt;
-            }
-            pre {
-              white-space: pre-wrap;
-              word-wrap: break-word;
-              font-family: 'Times New Roman', Times, serif;
-              font-size: 12pt;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="instructions no-print">
-            <strong>To save as PDF:</strong> Click Print below →
-            Change destination to "Save as PDF" → Click Save
-          </div>
-          <pre>${letter.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
-          <script>
-            window.onload = function() { window.print(); }
-          </script>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
   };
 
   if (ordered) {
@@ -208,15 +147,6 @@ export default function MailingUpsell({ letter, recipientAddress, senderEmail, s
           </div>
         )}
       </div>
-
-      {/* Free download option */}
-      <button
-        onClick={handleDownload}
-        className="w-full flex items-center justify-center gap-2 py-3 text-gray-500 text-sm hover:text-navy transition-colors"
-      >
-        <Download size={15} />
-        No thanks — download the PDF free
-      </button>
 
       <p className="text-xs text-gray-400 text-center leading-relaxed">
         Certified mail includes USPS tracking + proof of delivery.
