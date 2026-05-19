@@ -140,7 +140,17 @@ What happened? Give me a brief overview and I'll ask follow-up questions to fill
         }),
       });
       const data = await res.json();
-      setLetter(data.content || '');
+      const content = data.content || '';
+
+      if (!content.trim()) {
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: 'Something went wrong generating your letter. Please try again.',
+        }]);
+        return;
+      }
+
+      setLetter(content);
 
       // Extract recipient address from conversation for mailing
       const allText = conversation.map(m => m.content).join(' ');
