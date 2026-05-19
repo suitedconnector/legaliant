@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { Shield, ChevronDown, ArrowLeft, ArrowRight } from 'lucide-react';
 
@@ -16,11 +18,11 @@ const CLAIM_TYPES = [
       { id: 'national_origin', label: 'National Origin' },
     ],
   },
-  { id: 'retaliation',             label: 'Retaliation',             desc: 'Fired for reporting misconduct or exercising a right' },
-  { id: 'whistleblower',           label: 'Whistleblower',           desc: 'Reported illegal activity or safety violations' },
-  { id: 'wrongful_termination',    label: 'Wrongful Termination',    desc: 'Fired in violation of contract or public policy' },
-  { id: 'harassment',              label: 'Harassment',              desc: 'Hostile work environment or sexual harassment' },
-  { id: 'wage_theft',              label: 'Wage Theft',              desc: 'Unpaid wages, overtime, or final paycheck violations' },
+  { id: 'retaliation',          label: 'Retaliation',          desc: 'Fired for reporting misconduct or exercising a right' },
+  { id: 'whistleblower',        label: 'Whistleblower',        desc: 'Reported illegal activity or safety violations' },
+  { id: 'wrongful_termination', label: 'Wrongful Termination', desc: 'Fired in violation of contract or public policy' },
+  { id: 'harassment',           label: 'Harassment',           desc: 'Hostile work environment or sexual harassment' },
+  { id: 'wage_theft',           label: 'Wage Theft',           desc: 'Unpaid wages, overtime, or final paycheck violations' },
 ];
 
 export default function StepTwo({ animClass, formData, onUpdate, onNext, onBack }) {
@@ -81,7 +83,6 @@ export default function StepTwo({ animClass, formData, onUpdate, onNext, onBack 
                   checked={isChecked}
                   onChange={() => toggleClaim(claim.id)}
                 />
-                {/* Custom checkbox */}
                 <div className={[
                   'w-5 h-5 rounded flex-shrink-0 flex items-center justify-center border-2 transition-all duration-150',
                   isChecked ? 'bg-navy border-navy' : 'border-gray-300',
@@ -109,7 +110,6 @@ export default function StepTwo({ animClass, formData, onUpdate, onNext, onBack 
                 </div>
               </label>
 
-              {/* Discrimination sub-types */}
               {claim.subTypes && isChecked && discOpen && (
                 <div className="mt-2 ml-8 p-4 bg-navy/3 rounded-xl border border-navy/8 step-enter-up">
                   <p className="text-xs font-semibold text-navy mb-3 uppercase tracking-wide">
@@ -161,16 +161,14 @@ export default function StepTwo({ animClass, formData, onUpdate, onNext, onBack 
         )}
       </div>
 
-      {/* Helpful note */}
       <div className="mt-4 px-4 py-3 rounded-xl bg-gold/8 border border-gold/20 flex gap-3">
         <div className="text-gold mt-0.5 flex-shrink-0">💡</div>
         <p className="text-xs text-navy/70 leading-relaxed">
-          <strong className="text-navy">Tip:</strong> California's FEHA provides stronger protections than federal law,
+          <strong className="text-navy">Tip:</strong> California&apos;s FEHA provides stronger protections than federal law,
           with no cap on emotional distress or punitive damages in discrimination cases.
         </p>
       </div>
 
-      {/* Navigation */}
       <div className="mt-6 flex justify-between">
         <button onClick={onBack} className="btn-outline">
           <ArrowLeft size={16} />

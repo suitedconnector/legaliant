@@ -1,13 +1,14 @@
+'use client';
+
 import { useEffect, useState } from 'react';
 import {
   Scale, TrendingUp, TrendingDown, Minus,
-  CheckCircle2, AlertTriangle, Phone, ArrowRight,
+  AlertTriangle, Phone, ArrowRight,
   Shield, FileText, Award, BarChart3, Clock, ChevronDown, ChevronUp,
-  Download, RefreshCw, Quote,
+  Download, RefreshCw,
 } from 'lucide-react';
-import DamageChart from './DamageChart.jsx';
+import DamageChart from './DamageChart';
 
-/* ─── Helpers ──────────────────────────────────────────────── */
 function fmtUSD(n) {
   if (!n || isNaN(n)) return '—';
   if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
@@ -16,10 +17,10 @@ function fmtUSD(n) {
 }
 
 const STRENGTH_COLORS = {
-  'Weak':       { bar: 'bg-red-500',    badge: 'bg-red-50 text-red-700 border-red-200',    pct: 22 },
-  'Moderate':   { bar: 'bg-amber-400',  badge: 'bg-amber-50 text-amber-700 border-amber-200', pct: 50 },
-  'Strong':     { bar: 'bg-emerald-500',badge: 'bg-emerald-50 text-emerald-700 border-emerald-200', pct: 75 },
-  'Very Strong':{ bar: 'bg-emerald-500',badge: 'bg-emerald-50 text-emerald-700 border-emerald-200', pct: 92 },
+  'Weak':        { bar: 'bg-red-500',    badge: 'bg-red-50 text-red-700 border-red-200',       pct: 22 },
+  'Moderate':    { bar: 'bg-amber-400',  badge: 'bg-amber-50 text-amber-700 border-amber-200', pct: 50 },
+  'Strong':      { bar: 'bg-emerald-500',badge: 'bg-emerald-50 text-emerald-700 border-emerald-200', pct: 75 },
+  'Very Strong': { bar: 'bg-emerald-500',badge: 'bg-emerald-50 text-emerald-700 border-emerald-200', pct: 92 },
 };
 
 const IMPACT_ICON = {
@@ -28,7 +29,6 @@ const IMPACT_ICON = {
   neutral:  <Minus        size={14} className="text-gray-400  flex-shrink-0 mt-0.5" />,
 };
 
-/* ─── Loading screen ───────────────────────────────────────── */
 const LOADING_STEPS = [
   'Analyzing your case details…',
   'Reviewing California FEHA statutes…',
@@ -42,53 +42,37 @@ function LoadingScreen() {
   const [barWidth, setBarWidth] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setPhase(p => Math.min(p + 1, LOADING_STEPS.length - 1));
-    }, 1800);
-    const bar = setInterval(() => {
-      setBarWidth(w => Math.min(w + 1, 95));
-    }, 120);
+    const interval = setInterval(() => setPhase(p => Math.min(p + 1, LOADING_STEPS.length - 1)), 1800);
+    const bar = setInterval(() => setBarWidth(w => Math.min(w + 1, 95)), 120);
     return () => { clearInterval(interval); clearInterval(bar); };
   }, []);
 
   return (
-    <div className="min-h-screen hero-bg flex flex-col items-center justify-center px-4">
+    <div className="min-h-[60vh] hero-bg flex flex-col items-center justify-center px-4">
       <div className="text-center max-w-sm w-full">
-        {/* Animated logo */}
         <div className="w-20 h-20 rounded-3xl mx-auto mb-8 flex items-center justify-center animate-float"
           style={{ background: 'linear-gradient(135deg, #243358, #1a2744)', border: '2px solid rgba(201,168,76,0.3)' }}>
           <Scale size={36} className="text-gold" />
         </div>
-
-        <h2 className="font-serif text-white text-2xl font-bold mb-2">
-          Analyzing Your Case
-        </h2>
+        <h2 className="font-serif text-white text-2xl font-bold mb-2">Analyzing Your Case</h2>
         <p className="text-white/50 text-sm mb-10">
           Our AI is reviewing California employment law and generating your personalized analysis.
         </p>
-
-        {/* Progress bar */}
         <div className="w-full bg-white/10 rounded-full h-1 mb-4 overflow-hidden">
           <div
             className="h-full rounded-full transition-all duration-700"
             style={{ width: `${barWidth}%`, background: 'linear-gradient(90deg, #c9a84c, #d4b96a)' }}
           />
         </div>
-
-        {/* Step labels */}
         <div className="space-y-2">
           {LOADING_STEPS.map((s, i) => (
-            <div
-              key={i}
-              className={[
-                'flex items-center gap-2 text-sm transition-all duration-500',
-                i < phase   ? 'text-gold/60' :
-                i === phase ? 'text-white' : 'text-white/20',
-              ].join(' ')}
-            >
+            <div key={i} className={[
+              'flex items-center gap-2 text-sm transition-all duration-500',
+              i < phase ? 'text-gold/60' : i === phase ? 'text-white' : 'text-white/20',
+            ].join(' ')}>
               <div className={[
                 'w-4 h-4 rounded-full flex items-center justify-center text-xs flex-shrink-0 border',
-                i < phase   ? 'bg-gold/20 border-gold/40 text-gold' :
+                i < phase ? 'bg-gold/20 border-gold/40 text-gold' :
                 i === phase ? 'border-gold text-gold animate-shimmer' : 'border-white/15 text-white/20',
               ].join(' ')}>
                 {i < phase ? '✓' : i + 1}
@@ -102,19 +86,16 @@ function LoadingScreen() {
   );
 }
 
-/* ─── Error screen ─────────────────────────────────────────── */
 function ErrorScreen({ error, onRetry }) {
   return (
-    <div className="min-h-screen hero-bg flex items-center justify-center px-4">
+    <div className="min-h-[60vh] hero-bg flex items-center justify-center px-4">
       <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center shadow-navy-lg">
         <AlertTriangle size={40} className="text-amber-400 mx-auto mb-4" />
         <h2 className="font-serif text-navy text-xl font-bold mb-2">Analysis Unavailable</h2>
         <p className="text-gray-500 text-sm mb-6 leading-relaxed">{error}</p>
-        <button onClick={onRetry} className="btn-navy w-full justify-center">
-          Try Again
-        </button>
+        <button onClick={onRetry} className="btn-navy w-full justify-center">Try Again</button>
         <p className="text-xs text-gray-400 mt-4">
-          If the issue persists, please contact us at{' '}
+          If the issue persists, contact{' '}
           <a href="mailto:support@legaliant.com" className="text-gold underline">support@legaliant.com</a>
         </p>
       </div>
@@ -122,7 +103,6 @@ function ErrorScreen({ error, onRetry }) {
   );
 }
 
-/* ─── Damage category card ─────────────────────────────────── */
 function DamageCard({ category, description, estimatedRange, notes }) {
   const [open, setOpen] = useState(false);
   return (
@@ -149,14 +129,12 @@ function DamageCard({ category, description, estimatedRange, notes }) {
   );
 }
 
-/* ─── Main Results component ───────────────────────────────── */
-export default function Results({ analysis, isLoading, error, onRetry, formData }) {
+export default function Results({ analysis, isLoading, error, onRetry, onRecalculate, formData }) {
   const [strengthWidth, setStrengthWidth] = useState(0);
   const [revealed, setRevealed] = useState(false);
 
   useEffect(() => {
     if (!analysis) return;
-    // Small delay so the fade-in feels intentional after the loading screen clears
     const revealTimer = setTimeout(() => setRevealed(true), 80);
     const strengthTimer = setTimeout(() => {
       const s = STRENGTH_COLORS[analysis.caseStrength];
@@ -168,16 +146,11 @@ export default function Results({ analysis, isLoading, error, onRetry, formData 
   if (isLoading || (!analysis && !error)) return <LoadingScreen />;
   if (error) return <ErrorScreen error={error} onRetry={onRetry} />;
 
-  // Handle raw text fallback
   if (analysis?.parseError) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="hero-bg py-10 px-4">
           <div className="max-w-3xl mx-auto">
-            <div className="flex items-center gap-3 mb-6">
-              <Scale size={24} className="text-gold" />
-              <span className="font-serif text-white text-xl font-bold">Legaliant</span>
-            </div>
             <h1 className="font-serif text-white text-3xl font-bold mb-2">Your Case Analysis</h1>
           </div>
           <div className="gold-rule mt-6" />
@@ -196,8 +169,6 @@ export default function Results({ analysis, isLoading, error, onRetry, formData 
 
   const strength = STRENGTH_COLORS[analysis.caseStrength] || STRENGTH_COLORS['Moderate'];
   const firstName = (formData?.name || '').split(' ')[0] || 'Your';
-  
-  // Personalization calculations
   const salary = parseFloat(String(formData?.annualSalary || '').replace(/,/g, '')) || 0;
   const daysSinceTermination = parseFloat(formData?.daysSinceTermination) || 0;
   const backPayEstimate = salary / 365 * daysSinceTermination;
@@ -207,41 +178,26 @@ export default function Results({ analysis, isLoading, error, onRetry, formData 
       className="copyright-protected min-h-screen bg-gray-50 transition-opacity duration-700 ease-out"
       style={{ opacity: revealed ? 1 : 0, transform: revealed ? 'none' : 'translateY(12px)', transition: 'opacity 0.65s ease-out, transform 0.65s ease-out' }}
     >
-      {/* ─── Results Header ─── */}
       <div className="hero-bg relative overflow-hidden">
         <div className="absolute top-0 right-0 w-80 h-80 opacity-5 rounded-full"
           style={{ background: 'radial-gradient(circle, #c9a84c, transparent)', transform: 'translate(25%,-25%)' }} />
 
         <div className="relative max-w-3xl mx-auto px-4 pt-8 pb-10">
-          {/* Brand */}
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-8 h-8 rounded-lg bg-gold/15 flex items-center justify-center border border-gold/25">
-              <Scale size={16} className="text-gold" />
-            </div>
-            <span className="font-serif text-white font-bold text-lg tracking-wide">Legaliant</span>
-            <span className="ml-auto text-white/30 text-xs">Confidential Case Analysis</span>
-          </div>
-
-          {/* Title */}
           <p className="text-gold text-xs font-semibold tracking-widest uppercase mb-2">
-            {firstName}'s Case Analysis
+            {firstName}&apos;s Case Analysis
           </p>
           <h1 className="font-serif text-white text-3xl md:text-4xl font-bold mb-3">
             California Wrongful Termination
           </h1>
           <p className="text-white/60 text-sm max-w-xl leading-relaxed">{analysis.summary}</p>
 
-          {/* Case strength */}
           <div className="mt-6 flex items-center gap-4">
             <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${strength.badge}`}>
               {analysis.caseStrength} Case
             </span>
             <div className="flex-1 max-w-[180px]">
               <div className="strength-bar">
-                <div
-                  className={`strength-fill ${strength.bar}`}
-                  style={{ width: `${strengthWidth}%` }}
-                />
+                <div className={`strength-fill ${strength.bar}`} style={{ width: `${strengthWidth}%` }} />
               </div>
             </div>
             <span className="text-white/40 text-xs">{analysis.caseStrengthScore}/10</span>
@@ -261,8 +217,6 @@ export default function Results({ analysis, isLoading, error, onRetry, formData 
       </div>
 
       <div className="max-w-3xl mx-auto px-4 py-8 space-y-6 step-enter-up">
-
-        {/* ─── Settlement Range ─── */}
         <div className="bg-navy rounded-2xl overflow-hidden shadow-navy-lg">
           <div className="px-6 pt-6 pb-4 border-b border-white/10">
             <div className="flex items-center gap-2 mb-1">
@@ -295,7 +249,6 @@ export default function Results({ analysis, isLoading, error, onRetry, formData 
           </div>
         </div>
 
-        {/* ─── Personalization Section */}
         {salary > 0 && (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-6">
             <div className="flex items-center gap-2 mb-4">
@@ -319,7 +272,6 @@ export default function Results({ analysis, isLoading, error, onRetry, formData 
           </div>
         )}
 
-        {/* Damage Chart */}
         {analysis.damageCategories?.length > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
@@ -328,7 +280,7 @@ export default function Results({ analysis, isLoading, error, onRetry, formData 
                 <h2 className="font-serif text-navy text-lg font-bold">Detailed Breakdown</h2>
               </div>
               <div className="space-y-2">
-                {analysis.damageCategories.map((cat) => (
+                {analysis.damageCategories.map(cat => (
                   <DamageCard key={cat.category} {...cat} />
                 ))}
               </div>
@@ -337,7 +289,6 @@ export default function Results({ analysis, isLoading, error, onRetry, formData 
           </div>
         )}
 
-        {/* ─── Key Factors ─── */}
         {analysis.keyFactors?.length > 0 && (
           <div>
             <div className="flex items-center gap-2 mb-3">
@@ -358,7 +309,6 @@ export default function Results({ analysis, isLoading, error, onRetry, formData 
           </div>
         )}
 
-        {/* ─── Next Steps ─── */}
         {analysis.nextSteps?.length > 0 && (
           <div>
             <div className="flex items-center gap-2 mb-3">
@@ -378,7 +328,6 @@ export default function Results({ analysis, isLoading, error, onRetry, formData 
           </div>
         )}
 
-        {/* ─── Urgency note ─── */}
         {analysis.urgencyNote && (
           <div className="flex gap-3 items-start p-4 rounded-xl bg-amber-50 border border-amber-200">
             <Clock size={16} className="text-amber-500 flex-shrink-0 mt-0.5" />
@@ -389,7 +338,6 @@ export default function Results({ analysis, isLoading, error, onRetry, formData 
           </div>
         )}
 
-        {/* Export & Actions */}
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <button
             onClick={() => window.print()}
@@ -399,7 +347,7 @@ export default function Results({ analysis, isLoading, error, onRetry, formData 
             Download PDF Report
           </button>
           <button
-            onClick={() => window.location.reload()}
+            onClick={onRecalculate}
             className="flex-1 flex items-center justify-center gap-2 py-3 px-6 bg-white border border-gray-200 rounded-xl text-navy font-semibold hover:bg-gray-50 transition-colors"
           >
             <RefreshCw size={16} />
@@ -407,8 +355,6 @@ export default function Results({ analysis, isLoading, error, onRetry, formData 
           </button>
         </div>
 
-        
-        {/* CTA */}
         <div className="bg-navy rounded-2xl overflow-hidden shadow-navy-lg">
           <div className="px-6 py-8 text-center">
             <div className="w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center"
@@ -420,8 +366,7 @@ export default function Results({ analysis, isLoading, error, onRetry, formData 
             </h3>
             <p className="text-white/60 text-sm mb-6 max-w-sm mx-auto leading-relaxed">
               A licensed California employment attorney in our network will review your
-              case at no charge. Most cases are handled on contingency -- you pay nothing
-              unless you win.
+              case at no charge. Most cases are handled on contingency — you pay nothing unless you win.
             </p>
             <a
               href="tel:+18005551234"
@@ -437,7 +382,6 @@ export default function Results({ analysis, isLoading, error, onRetry, formData 
           </div>
         </div>
 
-        {/* ─── Disclaimer ─── */}
         <div className="p-5 rounded-xl bg-gray-100 border border-gray-200">
           <p className="text-xs text-gray-500 leading-relaxed text-center">
             {analysis.disclaimer || 'This analysis is for informational purposes only and does not constitute legal advice. Results are estimates only. Legaliant is a brand of Vertex Ventures LLC. We are not a law firm.'}

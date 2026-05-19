@@ -24,25 +24,12 @@ export default function Hero({ compact = false }) {
 
   return (
     <header className="hero-bg relative overflow-hidden">
-      {/* Decorative orbs */}
       <div className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-5"
         style={{ background: 'radial-gradient(circle, #c9a84c, transparent)', transform: 'translate(30%, -30%)' }} />
       <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full opacity-5"
         style={{ background: 'radial-gradient(circle, #c9a84c, transparent)', transform: 'translate(-30%, 30%)' }} />
 
       <div className="relative max-w-2xl mx-auto px-4 pt-10 pb-12">
-        {/* Logo */}
-        <div className="flex items-center gap-3 mb-10">
-          <div className="w-9 h-9 rounded-lg bg-gold/15 flex items-center justify-center border border-gold/25">
-            <Scale size={18} className="text-gold" />
-          </div>
-          <span className="font-serif text-white font-bold text-xl tracking-wide">
-            Legaliant
-          </span>
-          <span className="ml-1 text-white/30 text-sm">by Vertex Ventures LLC</span>
-        </div>
-
-        {/* Main headline */}
         <div className="mb-3">
           <p className="text-gold text-xs font-semibold tracking-widest uppercase mb-3">
             California Wrongful Termination
@@ -57,7 +44,6 @@ export default function Hero({ compact = false }) {
           </p>
         </div>
 
-        {/* Trust badges */}
         <div className="flex flex-wrap gap-4 mt-8">
           {['California Employment Law', 'AI-Powered Analysis', 'Free & Confidential'].map(b => (
             <div key={b} className="flex items-center gap-1.5 text-white/50 text-xs">

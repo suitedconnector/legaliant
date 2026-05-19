@@ -1,25 +1,23 @@
+'use client';
+
 import { useState, useCallback } from 'react';
-import Hero from './components/Hero.jsx';
-import ProgressBar from './components/ProgressBar.jsx';
-import StepOne from './components/StepOne.jsx';
-import StepTwo from './components/StepTwo.jsx';
-import StepThree from './components/StepThree.jsx';
-import TeaserResults from './components/TeaserResults.jsx';
-import Results from './components/Results.jsx';
-import Disclaimer from './components/Disclaimer.jsx';
-import CopyrightProtection from './components/CopyrightProtection.jsx';
+import Hero from './Hero';
+import ProgressBar from './ProgressBar';
+import StepOne from './StepOne';
+import StepTwo from './StepTwo';
+import StepThree from './StepThree';
+import TeaserResults from './TeaserResults';
+import Results from './Results';
+import CopyrightProtection from './CopyrightProtection';
 
 const INITIAL_FORM = {
-  // Step 1
   annualSalary: '',
   yearsEmployed: '',
   terminationDate: '',
   currentlyEmployed: '',
   newSalary: '',
-  // Step 2
   claimTypes: [],
   discriminationSubTypes: [],
-  // Step 3
   documentedEvidence: '',
   hrComplaintsFiled: '',
   witnesses: '',
@@ -27,8 +25,7 @@ const INITIAL_FORM = {
   daysSinceTermination: '',
 };
 
-// Steps: 1=Basic, 2=Claims, 3=Evidence, 4=Teaser+LeadCapture (unlock gate), 5=Results
-export default function App() {
+export default function CalculatorTool() {
   const [step, setStep] = useState(1);
   const [animKey, setAnimKey] = useState(0);
   const [animClass, setAnimClass] = useState('step-enter-right');
@@ -48,12 +45,10 @@ export default function App() {
     setFormData(prev => ({ ...prev, ...data }));
   }, []);
 
-  // Called by TeaserResults after the padlock animation completes.
-  // leadData contains the lead capture fields (name, email, phone, etc.)
   const handleSubmitLead = useCallback(async (leadData) => {
     setIsLoading(true);
     setError(null);
-    navigate(5, 'forward'); // Navigate to Results (shows loading screen)
+    navigate(5, 'forward');
 
     const fullData = { ...formData, ...leadData };
 
@@ -78,15 +73,23 @@ export default function App() {
     }
   }, [formData, navigate]);
 
+  const handleRecalculate = useCallback(() => {
+    setAnalysis(null);
+    setError(null);
+    setFormData(INITIAL_FORM);
+    setStep(1);
+    setAnimClass('step-enter-right');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   const showHero     = step < 5;
   const showProgress = step >= 1 && step <= 4;
 
   return (
     <div className="min-h-screen bg-gray-50">
       <CopyrightProtection />
-      
-      {showHero && <Hero compact={step > 1} />}
 
+      {showHero && <Hero compact={step > 1} />}
       {showProgress && <ProgressBar step={step} />}
 
       <main className={step < 5 ? 'max-w-2xl mx-auto px-4 pb-16' : ''}>
@@ -135,11 +138,10 @@ export default function App() {
             isLoading={isLoading}
             error={error}
             onRetry={() => navigate(4, 'back')}
+            onRecalculate={handleRecalculate}
           />
         )}
       </main>
-
-      <Disclaimer />
     </div>
   );
 }

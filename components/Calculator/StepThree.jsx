@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { FileSearch, ArrowLeft, ArrowRight, HelpCircle } from 'lucide-react';
 
@@ -73,9 +75,7 @@ export default function StepThree({ animClass, formData, onUpdate, onNext, onBac
     return Object.keys(e).length === 0;
   };
 
-  const handleNext = () => {
-    if (validate()) onNext();
-  };
+  const handleNext = () => { if (validate()) onNext(); };
 
   return (
     <div className={`${animClass} pt-8`}>
@@ -138,7 +138,6 @@ export default function StepThree({ animClass, formData, onUpdate, onNext, onBac
         ))}
       </div>
 
-      {/* Score preview */}
       {Object.keys(formData).filter(k =>
         ['documentedEvidence','hrComplaintsFiled','witnesses','signedSeverance'].includes(k) && formData[k]
       ).length >= 2 && (
@@ -150,7 +149,6 @@ export default function StepThree({ animClass, formData, onUpdate, onNext, onBac
         </div>
       )}
 
-      {/* Navigation */}
       <div className="mt-6 flex justify-between">
         <button onClick={onBack} className="btn-outline">
           <ArrowLeft size={16} />

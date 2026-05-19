@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { DollarSign, Calendar, Briefcase, TrendingUp, ArrowRight } from 'lucide-react';
 
@@ -39,9 +41,7 @@ export default function StepOne({ animClass, formData, onUpdate, onNext }) {
     return Object.keys(e).length === 0;
   };
 
-  const handleNext = () => {
-    if (validate()) onNext();
-  };
+  const handleNext = () => { if (validate()) onNext(); };
 
   const formatSalary = (val) => {
     const n = val.replace(/[^0-9]/g, '');
@@ -50,7 +50,6 @@ export default function StepOne({ animClass, formData, onUpdate, onNext }) {
 
   return (
     <div className={`${animClass} pt-8`}>
-      {/* Card header */}
       <div className="mb-6">
         <div className="flex items-center gap-2 text-gold text-xs font-semibold tracking-widest uppercase mb-2">
           <Briefcase size={13} />
@@ -63,8 +62,6 @@ export default function StepOne({ animClass, formData, onUpdate, onNext }) {
       </div>
 
       <div className="bg-white rounded-2xl shadow-card border border-gray-100 p-6 space-y-5">
-
-        {/* Annual Salary */}
         <div>
           <Label hint="at time of termination">Annual Salary</Label>
           <FieldRow icon={DollarSign}>
@@ -80,7 +77,6 @@ export default function StepOne({ animClass, formData, onUpdate, onNext }) {
           {errors.annualSalary && <p className="text-red-500 text-xs mt-1">{errors.annualSalary}</p>}
         </div>
 
-        {/* Years Employed */}
         <div>
           <Label hint="total at this employer">Years Employed</Label>
           <FieldRow icon={Briefcase}>
@@ -97,7 +93,6 @@ export default function StepOne({ animClass, formData, onUpdate, onNext }) {
           {errors.yearsEmployed && <p className="text-red-500 text-xs mt-1">{errors.yearsEmployed}</p>}
         </div>
 
-        {/* Termination Date */}
         <div>
           <Label>Date of Termination</Label>
           <FieldRow icon={Calendar}>
@@ -115,7 +110,6 @@ export default function StepOne({ animClass, formData, onUpdate, onNext }) {
           {errors.terminationDate && <p className="text-red-500 text-xs mt-1">{errors.terminationDate}</p>}
         </div>
 
-        {/* Currently Employed */}
         <div>
           <Label>Are you currently employed?</Label>
           <div className="flex gap-3">
@@ -136,7 +130,6 @@ export default function StepOne({ animClass, formData, onUpdate, onNext }) {
           {errors.currentlyEmployed && <p className="text-red-500 text-xs mt-1">{errors.currentlyEmployed}</p>}
         </div>
 
-        {/* New Salary (conditional) */}
         {formData.currentlyEmployed === 'yes' && (
           <div className="step-enter-up">
             <Label hint="at new job (annual)">New Salary</Label>
@@ -155,7 +148,6 @@ export default function StepOne({ animClass, formData, onUpdate, onNext }) {
         )}
       </div>
 
-      {/* Navigation */}
       <div className="mt-6 flex justify-end">
         <button onClick={handleNext} className="btn-gold text-base">
           Next: Your Claims

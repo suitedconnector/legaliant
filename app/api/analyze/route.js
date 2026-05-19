@@ -1,10 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { Resend } from 'resend';
 
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
-
+const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 function buildPrompt(formData) {
@@ -100,7 +97,7 @@ Respond with this exact JSON structure:
     "Specific, actionable next step 3",
     "Specific, actionable next step 4"
   ],
-  "urgencyNote": "Any statute of limitations or time-sensitive action required (e.g. DFEH/CRD filing deadline, NLRB charge window)",
+  "urgencyNote": "Any statute of limitations or time-sensitive action required",
   "strongestClaims": ["Claim 1", "Claim 2"],
   "disclaimer": "This analysis is for informational purposes only and does not constitute legal advice. Results are estimates only. Consult a licensed California employment attorney."
 }`;
@@ -109,7 +106,7 @@ Respond with this exact JSON structure:
 function generateEmailTemplate(analysis, formData) {
   const firstName = (formData.name || '').split(' ')[0] || 'there';
   const settlementRange = analysis.settlementRange || {};
-  
+
   return `
 <!DOCTYPE html>
 <html>
@@ -128,10 +125,6 @@ function generateEmailTemplate(analysis, formData) {
         .range-item { display: inline-block; margin: 0 15px; }
         .range-label { color: #c9a84c; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
         .range-value { color: white; font-size: 24px; font-weight: bold; display: block; margin-top: 5px; }
-        .strength-badge { display: inline-block; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: bold; margin: 10px 0; }
-        .strength-weak { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
-        .strength-moderate { background: #fffbeb; color: #d97706; border: 1px solid #fed7aa; }
-        .strength-strong { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
         .section { margin: 25px 0; }
         .section h3 { color: #1a2744; border-bottom: 2px solid #c9a84c; padding-bottom: 8px; }
         .next-steps { background: #f8fafc; padding: 20px; border-radius: 8px; }
@@ -147,19 +140,13 @@ function generateEmailTemplate(analysis, formData) {
             <h1>Your Case Analysis</h1>
             <p>California Wrongful Termination Calculator</p>
         </div>
-        
         <div class="content">
             <p>Hi ${firstName},</p>
             <p>Thank you for using the Legaliant calculator. Here's your personalized case analysis:</p>
-            
             <div class="section">
                 <h3>Case Summary</h3>
                 <p>${analysis.summary}</p>
-                <div class="strength-badge strength-${analysis.caseStrength?.toLowerCase()}">
-                    ${analysis.caseStrength} Case (${analysis.caseStrengthScore}/10)
-                </div>
             </div>
-            
             <div class="settlement-range">
                 <div class="range-item">
                     <span class="range-label">Conservative</span>
@@ -174,7 +161,6 @@ function generateEmailTemplate(analysis, formData) {
                     <span class="range-value">$${(settlementRange.high || 0).toLocaleString()}</span>
                 </div>
             </div>
-            
             <div class="section">
                 <h3>Recommended Next Steps</h3>
                 <div class="next-steps">
@@ -186,43 +172,25 @@ function generateEmailTemplate(analysis, formData) {
                     `).join('')}
                 </div>
             </div>
-            
             <div style="text-align: center;">
                 <a href="tel:+18005551234" class="cta">Speak With an Attorney</a>
                 <p style="color: #6b7280; font-size: 14px;">Free consultation · No obligation</p>
             </div>
-            
             <div class="footer">
                 <p><strong>© 2026 Vertex Ventures LLC. All rights reserved.</strong></p>
                 <p>This analysis is for informational purposes only and does not constitute legal advice.</p>
-                <p>The Legaliant Wrongful Termination Calculator design and report format are protected by U.S. copyright law.</p>
-                <p>Limited License: For personal, non-commercial evaluation only. No reproduction or derivative works permitted.</p>
             </div>
         </div>
     </div>
 </body>
-</html>
-  `;
+</html>`;
 }
 
-export default async function handler(req, res) {
-  // CORS headers for local development
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
+export async function POST(request) {
   try {
-    const formData = req.body;
+    const formData = await request.json();
 
-    // --- Route lead to webhook (replace console.log with real webhook call) ---
+    // Route lead to webhook if configured
     const leadPayload = {
       timestamp: new Date().toISOString(),
       source: 'legaliant-calculator',
@@ -248,30 +216,18 @@ export default async function handler(req, res) {
           body: JSON.stringify(leadPayload),
         });
       } catch (webhookErr) {
-        // Non-fatal — log and continue
         console.error('[Webhook] Failed to send lead:', webhookErr.message);
       }
-    } else {
-      // Placeholder — log lead data to console
-      console.log('[Lead Captured]', JSON.stringify(leadPayload, null, 2));
     }
 
-    // --- Call Anthropic API ---
     const message = await client.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 2048,
       system: 'You are an expert California employment attorney. Respond ONLY with valid JSON — no markdown code fences, no explanation text. Just the raw JSON object.',
-      messages: [
-        {
-          role: 'user',
-          content: buildPrompt(formData),
-        },
-      ],
+      messages: [{ role: 'user', content: buildPrompt(formData) }],
     });
 
     const rawText = message.content[0].text.trim();
-
-    // Strip markdown code fences if present
     const cleaned = rawText
       .replace(/^```(?:json)?\s*/i, '')
       .replace(/\s*```$/, '')
@@ -281,11 +237,9 @@ export default async function handler(req, res) {
     try {
       analysis = JSON.parse(cleaned);
     } catch {
-      // If JSON parse fails, return the raw text for display
       analysis = { rawText: cleaned, parseError: true };
     }
 
-    // --- Send email with results ---
     if (resend && formData.email) {
       try {
         await resend.emails.send({
@@ -294,18 +248,17 @@ export default async function handler(req, res) {
           subject: 'Your California Wrongful Termination Case Analysis',
           html: generateEmailTemplate(analysis, formData),
         });
-        console.log('[Email] Results sent successfully to:', formData.email);
       } catch (emailErr) {
         console.error('[Email] Failed to send results:', emailErr.message);
       }
     }
 
-    return res.status(200).json({ analysis });
+    return Response.json({ analysis });
   } catch (err) {
     console.error('[API Error]', err);
-    return res.status(500).json({
-      error: 'Failed to generate analysis. Please try again.',
-      details: err.message,
-    });
+    return Response.json(
+      { error: 'Failed to generate analysis. Please try again.' },
+      { status: 500 }
+    );
   }
 }
