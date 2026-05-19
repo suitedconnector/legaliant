@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { Mail, Zap, Download, ArrowRight, CheckCircle2 } from 'lucide-react';
-import jsPDF from 'jspdf';
 
 export default function MailingUpsell({ letter, recipientAddress, senderEmail, senderName }) {
   const [tier, setTier] = useState(null);
@@ -30,33 +29,64 @@ export default function MailingUpsell({ letter, recipientAddress, senderEmail, s
   };
 
   const handleDownload = () => {
-    const doc = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: 'letter',
-    });
-
-    const margin = 25;
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    const maxLineWidth = pageWidth - margin * 2;
-
-    doc.setFont('times', 'normal');
-    doc.setFontSize(11);
-
-    const lines = doc.splitTextToSize(letter, maxLineWidth);
-    let y = margin;
-
-    for (const line of lines) {
-      if (y + 6 > pageHeight - margin) {
-        doc.addPage();
-        y = margin;
-      }
-      doc.text(line, margin, y);
-      y += 6;
-    }
-
-    doc.save('demand-letter.pdf');
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Demand Letter — Legaliant</title>
+          <style>
+            @media print {
+              @page {
+                size: letter;
+                margin: 1in;
+              }
+              body {
+                font-family: 'Times New Roman', Times, serif;
+                font-size: 12pt;
+                line-height: 1.6;
+                color: #000;
+              }
+              .no-print { display: none; }
+            }
+            body {
+              font-family: 'Times New Roman', Times, serif;
+              font-size: 12pt;
+              line-height: 1.6;
+              max-width: 680px;
+              margin: 40px auto;
+              padding: 20px;
+              color: #000;
+            }
+            .instructions {
+              background: #f0f0f0;
+              padding: 12px;
+              margin-bottom: 24px;
+              border-radius: 4px;
+              font-family: Arial, sans-serif;
+              font-size: 11pt;
+            }
+            pre {
+              white-space: pre-wrap;
+              word-wrap: break-word;
+              font-family: 'Times New Roman', Times, serif;
+              font-size: 12pt;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="instructions no-print">
+            <strong>To save as PDF:</strong> Click Print below →
+            Change destination to "Save as PDF" → Click Save
+          </div>
+          <pre>${letter.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+          <script>
+            window.onload = function() { window.print(); }
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
   };
 
   if (ordered) {
