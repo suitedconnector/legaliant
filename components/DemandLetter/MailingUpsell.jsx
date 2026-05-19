@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Mail, Zap, ArrowRight, CheckCircle2 } from 'lucide-react';
 
-export default function MailingUpsell({ letter, recipientAddress, senderEmail, senderName }) {
+export default function MailingUpsell({ letter, recipientAddress, senderEmail, senderName, onOrderComplete }) {
   const [tier, setTier] = useState(null);
   const [loading, setLoading] = useState(false);
   const [ordered, setOrdered] = useState(false);
@@ -21,6 +21,7 @@ export default function MailingUpsell({ letter, recipientAddress, senderEmail, s
       });
       if (!res.ok) throw new Error('Order failed');
       setOrdered(true);
+      onOrderComplete?.();
     } catch {
       setError('Something went wrong. Please try again.');
     } finally {

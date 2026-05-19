@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Send, Scale } from 'lucide-react';
 import LetterPreview from './LetterPreview';
 import MailingUpsell from './MailingUpsell';
+import EmailCapture from './EmailCapture';
 
 const DISPUTE_TYPES = [
   { id: 'wrongful_termination', label: 'Wrongful Termination', emoji: '🏢' },
@@ -57,7 +58,7 @@ Format it as a proper letter. Do not include any commentary — just the letter 
 }
 
 export default function DemandLetterChat() {
-  const [phase, setPhase] = useState('select'); // select | chat | preview | upsell
+  const [phase, setPhase] = useState('select'); // select | chat | preview | email-capture | upsell
   const [disputeType, setDisputeType] = useState('');
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -66,8 +67,27 @@ export default function DemandLetterChat() {
   const [senderEmail, setSenderEmail] = useState('');
   const [senderName, setSenderName] = useState('');
   const [recipientAddress, setRecipientAddress] = useState('');
+  const [resumeDraft, setResumeDraft] = useState(null);
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
+
+  // Check for saved draft on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('legaliant_draft_letter');
+      if (saved) {
+        const { letter: savedLetter, disputeType: savedType, timestamp } = JSON.parse(saved);
+        const ageHours = (Date.now() - new Date(timestamp)) / 36e5;
+        if (ageHours < 48) {
+          setResumeDraft({ letter: savedLetter, disputeType: savedType });
+        } else {
+          localStorage.removeItem('legaliant_draft_letter');
+        }
+      }
+    } catch {
+      // ignore malformed localStorage
+    }
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -152,6 +172,15 @@ What happened? Give me a brief overview and I'll ask follow-up questions to fill
 
       setLetter(content);
 
+      // Save draft to localStorage immediately
+      try {
+        localStorage.setItem('legaliant_draft_letter', JSON.stringify({
+          letter: content,
+          disputeType,
+          timestamp: new Date().toISOString(),
+        }));
+      } catch { /* ignore */ }
+
       // Extract recipient address from conversation for mailing
       const allText = conversation.map(m => m.content).join(' ');
       const addrMatch = allText.match(/\d+\s+[\w\s]+(?:Street|St|Avenue|Ave|Road|Rd|Blvd|Drive|Dr|Lane|Ln)[^,\n]*/i);
@@ -188,11 +217,78 @@ What happened? Give me a brief overview and I'll ask follow-up questions to fill
     }
   };
 
+  const handleApprove = () => {
+    setPhase('email-capture');
+  };
+
+  const handleEmailSubmit = async (email) => {
+    setSenderEmail(email);
+    setLoading(true);
+    try {
+      await fetch('/api/save-letter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, letter, disputeType }),
+      });
+    } catch {
+      // non-blocking — proceed to upsell regardless
+    } finally {
+      setLoading(false);
+    }
+    setPhase('upsell');
+  };
+
+  const handleOrderComplete = () => {
+    try {
+      localStorage.removeItem('legaliant_draft_letter');
+    } catch { /* ignore */ }
+  };
+
   // ── Select dispute type ──────────────────────────────
   if (phase === 'select') {
     return (
-      <div className="min-h-[calc(100vh-130px)] bg-navy-deeper flex flex-col" style={{ background: '#131f3a' }}>
+      <div className="min-h-[calc(100vh-130px)] flex flex-col" style={{ background: '#131f3a' }}>
         <div className="flex-1 flex flex-col items-center justify-center px-4 py-12">
+
+          {/* Resume draft banner */}
+          {resumeDraft && (
+            <div className="w-full max-w-2xl mb-6 flex items-center justify-between rounded-xl p-4"
+              style={{ background: '#1e2f5a', border: '1px solid #c9a84c' }}>
+              <div>
+                <p className="text-sm font-semibold" style={{ color: '#c9a84c' }}>
+                  You have a saved letter
+                </p>
+                <p className="text-xs mt-0.5" style={{ color: '#8899cc' }}>
+                  Continue where you left off
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setLetter(resumeDraft.letter);
+                    setDisputeType(resumeDraft.disputeType);
+                    setPhase('preview');
+                    setResumeDraft(null);
+                  }}
+                  className="text-xs font-bold px-3 py-1.5 rounded-lg"
+                  style={{ background: '#c9a84c', color: '#1a2744' }}
+                >
+                  Resume
+                </button>
+                <button
+                  onClick={() => {
+                    localStorage.removeItem('legaliant_draft_letter');
+                    setResumeDraft(null);
+                  }}
+                  className="text-xs px-3 py-1.5"
+                  style={{ color: '#4a5a80' }}
+                >
+                  Start over
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="w-12 h-12 rounded-2xl mb-6 flex items-center justify-center"
             style={{ background: 'linear-gradient(135deg, #c9a84c, #d4b96a)' }}>
             <Scale size={22} className="text-navy" />
@@ -221,54 +317,58 @@ What happened? Give me a brief overview and I'll ask follow-up questions to fill
     );
   }
 
-  // ── Preview + upsell ────────────────────────────────
-  if (phase === 'preview' || phase === 'upsell') {
+  // ── Preview ────────────────────────────────────────
+  if (phase === 'preview') {
     return (
       <div className="min-h-[calc(100vh-130px)] bg-gray-50">
         <div className="max-w-2xl mx-auto px-4 py-8">
-          {phase === 'preview' && (
-            <>
-              <div className="flex items-center gap-2 text-gold text-xs font-semibold tracking-widest uppercase mb-5">
-                <Scale size={13} />
-                Your Demand Letter — {disputeType}
-              </div>
-              <LetterPreview
-                letter={letter}
-                onApprove={() => setPhase('upsell')}
-                onRequestEdit={handleEditRequest}
-              />
-              {loading && (
-                <p className="text-center text-gray-400 text-sm mt-4 flex items-center justify-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-gold animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <span className="w-3 h-3 rounded-full bg-gold animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <span className="w-3 h-3 rounded-full bg-gold animate-bounce" style={{ animationDelay: '300ms' }} />
-                </p>
-              )}
-            </>
-          )}
-          {phase === 'upsell' && (
-            <>
-              <div className="flex items-center gap-2 text-gold text-xs font-semibold tracking-widest uppercase mb-5">
-                <Scale size={13} />
-                Send Your Letter
-              </div>
-              <MailingUpsell
-                letter={letter}
-                recipientAddress={recipientAddress}
-                senderEmail={senderEmail}
-                senderName={senderName}
-              />
-            </>
+          <div className="flex items-center gap-2 text-gold text-xs font-semibold tracking-widest uppercase mb-5">
+            <Scale size={13} />
+            Your Demand Letter — {disputeType}
+          </div>
+          <LetterPreview
+            letter={letter}
+            onApprove={handleApprove}
+            onRequestEdit={handleEditRequest}
+          />
+          {loading && (
+            <p className="text-center text-gray-400 text-sm mt-4 flex items-center justify-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-gold animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-3 h-3 rounded-full bg-gold animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-3 h-3 rounded-full bg-gold animate-bounce" style={{ animationDelay: '300ms' }} />
+            </p>
           )}
         </div>
       </div>
     );
   }
 
-  // ── Chat interface ──────────────────────────────────
+  // ── Upsell ─────────────────────────────────────────
+  if (phase === 'upsell') {
+    return (
+      <div className="min-h-[calc(100vh-130px)] bg-gray-50">
+        <div className="max-w-2xl mx-auto px-4 py-8">
+          <div className="flex items-center gap-2 text-gold text-xs font-semibold tracking-widest uppercase mb-5">
+            <Scale size={13} />
+            Send Your Letter
+          </div>
+          <MailingUpsell
+            letter={letter}
+            recipientAddress={recipientAddress}
+            senderEmail={senderEmail}
+            senderName={senderName}
+            onOrderComplete={handleOrderComplete}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // ── Email capture + Chat ────────────────────────────
+  // (email-capture reuses the chat chrome)
   return (
     <div className="flex flex-col" style={{ height: 'calc(100vh - 130px)', background: '#131f3a' }}>
-      {/* Chat header */}
+      {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10">
         <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold"
           style={{ background: 'linear-gradient(135deg, #c9a84c, #d4b96a)', color: '#1a2744' }}>
@@ -276,7 +376,9 @@ What happened? Give me a brief overview and I'll ask follow-up questions to fill
         </div>
         <div>
           <p className="text-white text-sm font-semibold">Legaliant AI</p>
-          <p className="text-white/40 text-xs">{disputeType} — Intake</p>
+          <p className="text-white/40 text-xs">
+            {phase === 'email-capture' ? `${disputeType} — Save Your Letter` : `${disputeType} — Intake`}
+          </p>
         </div>
       </div>
 
@@ -293,20 +395,31 @@ What happened? Give me a brief overview and I'll ask follow-up questions to fill
             <div
               className={[
                 'max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed',
-                msg.role === 'user'
-                  ? 'rounded-tr-sm text-white'
-                  : 'rounded-tl-sm text-white/90',
+                msg.role === 'user' ? 'rounded-tr-sm text-white' : 'rounded-tl-sm text-white/90',
               ].join(' ')}
-              style={{
-                background: msg.role === 'user' ? '#1a2744' : '#1e2f5a',
-              }}
+              style={{ background: msg.role === 'user' ? '#1a2744' : '#1e2f5a' }}
             >
               {msg.content}
             </div>
           </div>
         ))}
 
-        {loading && (
+        {/* Email capture prompt */}
+        {phase === 'email-capture' && (
+          <div className="flex justify-start gap-2">
+            <div className="w-7 h-7 rounded-lg flex-shrink-0 flex items-center justify-center text-xs font-bold self-start mt-1"
+              style={{ background: 'linear-gradient(135deg, #c9a84c, #d4b96a)', color: '#1a2744' }}>
+              L
+            </div>
+            <div className="max-w-[80%] px-4 py-3 rounded-2xl rounded-tl-sm text-sm leading-relaxed text-white/90"
+              style={{ background: '#1e2f5a' }}>
+              <p>Great — your letter looks good. Enter your email and we'll send you a copy to keep.</p>
+              <EmailCapture onSubmit={handleEmailSubmit} isLoading={loading} />
+            </div>
+          </div>
+        )}
+
+        {loading && phase !== 'email-capture' && (
           <div className="flex justify-start gap-2">
             <div className="w-7 h-7 rounded-lg flex-shrink-0 flex items-center justify-center text-xs font-bold"
               style={{ background: 'linear-gradient(135deg, #c9a84c, #d4b96a)', color: '#1a2744' }}>
@@ -325,40 +438,42 @@ What happened? Give me a brief overview and I'll ask follow-up questions to fill
         <div ref={bottomRef} />
       </div>
 
-      {/* Input bar */}
-      <div className="px-4 py-3 border-t border-white/10">
-        <div className="flex gap-2 items-end">
-          <textarea
-            ref={inputRef}
-            className="flex-1 px-4 py-3 rounded-xl text-sm text-white outline-none resize-none"
-            style={{
-              background: '#1e2f5a',
-              border: '1px solid rgba(255,255,255,0.1)',
-              minHeight: '44px',
-              maxHeight: '120px',
-            }}
-            placeholder="Type your answer…"
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-            }}
-            rows={1}
-            disabled={loading}
-          />
-          <button
-            onClick={sendMessage}
-            disabled={loading || !input.trim()}
-            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-200 disabled:opacity-40"
-            style={{ background: 'linear-gradient(135deg, #c9a84c, #d4b96a)' }}
-          >
-            <Send size={16} className="text-navy" />
-          </button>
+      {/* Input bar — hidden during email-capture */}
+      {phase !== 'email-capture' && (
+        <div className="px-4 py-3 border-t border-white/10">
+          <div className="flex gap-2 items-end">
+            <textarea
+              ref={inputRef}
+              className="flex-1 px-4 py-3 rounded-xl text-sm text-white outline-none resize-none"
+              style={{
+                background: '#1e2f5a',
+                border: '1px solid rgba(255,255,255,0.1)',
+                minHeight: '44px',
+                maxHeight: '120px',
+              }}
+              placeholder="Type your answer…"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+              }}
+              rows={1}
+              disabled={loading}
+            />
+            <button
+              onClick={sendMessage}
+              disabled={loading || !input.trim()}
+              className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-200 disabled:opacity-40"
+              style={{ background: 'linear-gradient(135deg, #c9a84c, #d4b96a)' }}
+            >
+              <Send size={16} className="text-navy" />
+            </button>
+          </div>
+          <p className="text-white/20 text-xs text-center mt-2">
+            Press Enter to send · Shift+Enter for new line
+          </p>
         </div>
-        <p className="text-white/20 text-xs text-center mt-2">
-          Press Enter to send · Shift+Enter for new line
-        </p>
-      </div>
+      )}
     </div>
   );
 }
