@@ -58,7 +58,7 @@ export const CHAPTERS = [
   },
 ]
 
-export const GUIDE_TITLE = 'SSDI Guide'
+export const GUIDE_TITLE = 'The SSDI Layoff Survival Guide'
 export const SITE_NAME = 'Legaliant'
 
 export function chapterBySlug(slug) {

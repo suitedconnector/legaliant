@@ -29,7 +29,7 @@ export default function SsdiLayout() {
       <header className="bg-navy text-white">
         <div className="max-w-3xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-3">
           <Link to="/ssdi" className="font-serif text-xl font-bold text-white no-underline">
-            {SITE_NAME} {GUIDE_TITLE}
+            {GUIDE_TITLE}
           </Link>
           <nav aria-label="Site">
             <ul className="flex gap-5 list-none m-0 p-0 text-sm">
